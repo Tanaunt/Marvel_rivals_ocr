@@ -2,135 +2,59 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Marvel Rivals OCR</title>
-  <!-- Carichiamo Tesseract.js da un CDN -->
-  <script src="https://unpkg.com/tesseract.js@2.1.4/dist/tesseract.min.js"></script>
+  <title>Cerca Giocatori dalla Clipboard</title>
   <style>
-    body {
-      font-family: sans-serif;
-      margin: 20px;
-    }
-    #results {
-      margin-top: 20px;
-      padding: 10px;
-      border: 1px solid #ccc;
-    }
-    #loader {
-      display: none;
-      color: green;
-    }
+    body { font-family: sans-serif; margin: 20px; }
+    #results { margin-top: 20px; padding: 10px; border: 1px solid #ccc; }
   </style>
 </head>
 <body>
-  <h1>Marvel Rivals OCR Demo</h1>
-  <p>Carica un'immagine e leggi il testo (nomi dei giocatori, etc.)</p>
-  
-  <!-- Input per selezionare l'immagine dal PC -->
-  <input type="file" id="file-input" accept="image/*" />
-
-  <!-- Pulsante per avviare il processo di OCR -->
-  <button id="process-button">Elabora immagine</button>
-
-  <!-- Indicatore di caricamento -->
-  <div id="loader">Elaborazione in corso, attendere...</div>
-
-  <!-- Div dove mostreremo i risultati -->
+  <h1>Cerca Giocatori dalla Clipboard</h1>
+  <p>Clicca il pulsante per leggere il testo copiato dalla clipboard (dallo script Python) e cercare i giocatori.</p>
+  <button id="readClipboard">Leggi Clipboard</button>
   <div id="results"></div>
 
   <script>
-    // Funzione che estrae i nomi dei giocatori dal testo OCR
-    function extractPlayerNames(rawText) {
-      // 1. Spezza in righe, rimuovi spazi vuoti e linee vuote
-      const lines = rawText
-        .split('\n')
-        .map(line => line.trim())
-        .filter(Boolean);
-
-      // 2. Crea un array dove salvare i nomi estratti
+    // Funzione per processare il testo e cercare i nomi dei giocatori
+    function extractPlayerNames(text) {
+      // Esempio semplice: cerca righe che abbiano un pattern come "numero/nome"
+      const lines = text.split('\n').map(line => line.trim()).filter(Boolean);
       const playerNames = [];
-
-      // 3. Scorriamo ogni riga per vedere se potrebbe contenere un nome
       for (let line of lines) {
-        // Esempio di controllo:
-        // - se la riga ha lunghezza compresa tra 3 e 20 caratteri
-        // - se contiene solo caratteri alfanumerici, underscore o trattini
-        // - oppure se contiene il pattern "numero/qualcosa"
-        const match = line.match(/(\d+\/[\w\-_\d]+)/g); 
+        const match = line.match(/(\d+\/[\w\-_\d]+)/g);
         if (match) {
-          // Se la riga corrisponde, aggiungi i match all'array dei nomi
-          playerNames.push(...match);
-        } else {
-          // In alternativa, potresti controllare se la riga è "simile" a un username
-          // ad esempio: alfanumerico con underscore, lungo almeno 3 caratteri
-          // e non troppo lungo
-          if (line.length >= 3 && line.length <= 20) {
-            // Filtra caratteri strani
-            const validChars = /^[A-Za-z0-9_\-]+$/;
-            if (validChars.test(line)) {
-              playerNames.push(line);
+          // Rimuove la parte "numero/" per ottenere solo il nome
+          match.forEach(name => {
+            const slashIndex = name.indexOf('/');
+            if (slashIndex !== -1) {
+              playerNames.push(name.substring(slashIndex + 1));
             }
+          });
+        } else {
+          // Altrimenti, se la linea sembra un username (criteri personalizzabili)
+          if (line.length >= 3 && line.length <= 20 && /^[A-Za-z0-9_\-]+$/.test(line)) {
+            playerNames.push(line);
           }
         }
       }
-
-      // 4. Se le stringhe contengono "XX/" all'inizio, magari vuoi rimuovere la parte iniziale con i numeri
-      // Per esempio, "23/NudeDan" -> "NudeDan"
-      const cleanedNames = playerNames.map(name => {
-        const slashIndex = name.indexOf('/');
-        if (slashIndex !== -1) {
-          return name.substring(slashIndex + 1);
-        }
-        return name;
-      });
-
-      // 5. Se hai trovato più di 6 nomi, potresti ridurli
-      return cleanedNames.slice(0, 6);
+      // Limitiamo ad esempio a 6 nomi
+      return playerNames.slice(0, 6);
     }
 
-    // Selezioniamo gli elementi dal DOM
-    const fileInput = document.getElementById('file-input');
-    const processButton = document.getElementById('process-button');
-    const loader = document.getElementById('loader');
-    const resultsDiv = document.getElementById('results');
-
-    // Funzione che gestisce l'OCR con Tesseract.js
-    async function doOCR(file) {
+    document.getElementById('readClipboard').addEventListener('click', async () => {
       try {
-        loader.style.display = 'block';         // Mostra il loader
-        resultsDiv.textContent = '';           // Svuota risultati precedenti
-
-        // Eseguiamo Tesseract sull'immagine caricata
-        const { data: { text } } = await Tesseract.recognize(file, 'eng');
-        
-        // Mostriamo il testo estratto
-        console.log('Testo grezzo:', text);
-        
-        // Ora estraiamo i nomi dai risultati OCR
-        const playerNames = extractPlayerNames(text);
-        console.log('Nomi estratti:', playerNames);
-        
-        // Mostriamo i risultati sulla pagina
-        resultsDiv.innerHTML = `
-          <p><strong>Testo grezzo OCR:</strong></p>
+        // Legge il testo dalla clipboard (richiede HTTPS e un'azione utente)
+        const text = await navigator.clipboard.readText();
+        const players = extractPlayerNames(text);
+        document.getElementById('results').innerHTML = `
+          <p><strong>Testo dalla Clipboard:</strong></p>
           <pre>${text}</pre>
-          <p><strong>Nomi estratti:</strong> ${playerNames.join(', ')}</p>
+          <p><strong>Nomi estratti:</strong> ${players.join(', ')}</p>
         `;
-      } catch (error) {
-        console.error(error);
-        resultsDiv.textContent = 'Errore durante OCR: ' + error;
-      } finally {
-        loader.style.display = 'none';         // Nascondi il loader
+        // Qui potresti aggiungere ulteriori logiche per cercare le statistiche dei giocatori, ecc.
+      } catch (err) {
+        document.getElementById('results').innerText = "Errore nella lettura della clipboard: " + err;
       }
-    }
-
-    // Ascoltatore di evento sul pulsante
-    processButton.addEventListener('click', () => {
-      const file = fileInput.files[0];
-      if (!file) {
-        alert('Seleziona prima un file immagine!');
-        return;
-      }
-      doOCR(file);
     });
   </script>
 </body>
