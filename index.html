@@ -20,8 +20,8 @@
   // Spezza il testo in righe, eliminando spazi extra e righe vuote
   const lines = rawText.split('\n').map(line => line.trim()).filter(Boolean);
   const playerNames = [];
-  // Regex: inizio linea, due cifre, uno o più spazi, poi il nome utente composto da lettere, numeri o underscore, e fine linea
-  const regex = /^(\d{2})\s+([A-Za-z0-9_]+)$/;
+  // Regex: inizio linea, due cifre, spazi, poi nome utente composto da lettere, numeri, underscore o trattino, e fine linea
+  const regex = /^(\d{2})\s+([A-Za-z0-9_-]+)$/;
   
   for (const line of lines) {
     const match = line.match(regex);
