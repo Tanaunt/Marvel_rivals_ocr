@@ -16,30 +16,24 @@
 
   <script>
     // Funzione per processare il testo e cercare i nomi dei giocatori
-    function extractPlayerNames(text) {
-      // Esempio semplice: cerca righe che abbiano un pattern come "numero/nome"
-      const lines = text.split('\n').map(line => line.trim()).filter(Boolean);
-      const playerNames = [];
-      for (let line of lines) {
-        const match = line.match(/(\d+\/[\w\-_\d]+)/g);
-        if (match) {
-          // Rimuove la parte "numero/" per ottenere solo il nome
-          match.forEach(name => {
-            const slashIndex = name.indexOf('/');
-            if (slashIndex !== -1) {
-              playerNames.push(name.substring(slashIndex + 1));
-            }
-          });
-        } else {
-          // Altrimenti, se la linea sembra un username (criteri personalizzabili)
-          if (line.length >= 3 && line.length <= 20 && /^[A-Za-z0-9_\-]+$/.test(line)) {
-            playerNames.push(line);
-          }
-        }
-      }
-      // Limitiamo ad esempio a 6 nomi
-      return playerNames.slice(0, 6);
+    function extractPlayerNames(rawText) {
+  // Spezza il testo in righe, eliminando spazi extra e righe vuote
+  const lines = rawText.split('\n').map(line => line.trim()).filter(Boolean);
+  const playerNames = [];
+  // Regex: inizio linea, due cifre, uno o più spazi, poi il nome utente composto da lettere, numeri o underscore, e fine linea
+  const regex = /^(\d{2})\s+([A-Za-z0-9_]+)$/;
+  
+  for (const line of lines) {
+    const match = line.match(regex);
+    if (match) {
+      // match[1] è il numero, match[2] è il nome utente
+      playerNames.push(match[2]);
     }
+  }
+  
+  return playerNames;
+}
+
 
     document.getElementById('readClipboard').addEventListener('click', async () => {
       try {
