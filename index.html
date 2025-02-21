@@ -38,6 +38,55 @@
   <div id="results"></div>
 
   <script>
+    // Funzione che estrae i nomi dei giocatori dal testo OCR
+    function extractPlayerNames(rawText) {
+      // 1. Spezza in righe, rimuovi spazi vuoti e linee vuote
+      const lines = rawText
+        .split('\n')
+        .map(line => line.trim())
+        .filter(Boolean);
+
+      // 2. Crea un array dove salvare i nomi estratti
+      const playerNames = [];
+
+      // 3. Scorriamo ogni riga per vedere se potrebbe contenere un nome
+      for (let line of lines) {
+        // Esempio di controllo:
+        // - se la riga ha lunghezza compresa tra 3 e 20 caratteri
+        // - se contiene solo caratteri alfanumerici, underscore o trattini
+        // - oppure se contiene il pattern "numero/qualcosa"
+        const match = line.match(/(\d+\/[\w\-_\d]+)/g); 
+        if (match) {
+          // Se la riga corrisponde, aggiungi i match all'array dei nomi
+          playerNames.push(...match);
+        } else {
+          // In alternativa, potresti controllare se la riga è "simile" a un username
+          // ad esempio: alfanumerico con underscore, lungo almeno 3 caratteri
+          // e non troppo lungo
+          if (line.length >= 3 && line.length <= 20) {
+            // Filtra caratteri strani
+            const validChars = /^[A-Za-z0-9_\-]+$/;
+            if (validChars.test(line)) {
+              playerNames.push(line);
+            }
+          }
+        }
+      }
+
+      // 4. Se le stringhe contengono "XX/" all'inizio, magari vuoi rimuovere la parte iniziale con i numeri
+      // Per esempio, "23/NudeDan" -> "NudeDan"
+      const cleanedNames = playerNames.map(name => {
+        const slashIndex = name.indexOf('/');
+        if (slashIndex !== -1) {
+          return name.substring(slashIndex + 1);
+        }
+        return name;
+      });
+
+      // 5. Se hai trovato più di 6 nomi, potresti ridurli
+      return cleanedNames.slice(0, 6);
+    }
+
     // Selezioniamo gli elementi dal DOM
     const fileInput = document.getElementById('file-input');
     const processButton = document.getElementById('process-button');
@@ -54,7 +103,18 @@
         const { data: { text } } = await Tesseract.recognize(file, 'eng');
         
         // Mostriamo il testo estratto
-        resultsDiv.textContent = 'Testo rilevato:\n' + text;
+        console.log('Testo grezzo:', text);
+        
+        // Ora estraiamo i nomi dai risultati OCR
+        const playerNames = extractPlayerNames(text);
+        console.log('Nomi estratti:', playerNames);
+        
+        // Mostriamo i risultati sulla pagina
+        resultsDiv.innerHTML = `
+          <p><strong>Testo grezzo OCR:</strong></p>
+          <pre>${text}</pre>
+          <p><strong>Nomi estratti:</strong> ${playerNames.join(', ')}</p>
+        `;
       } catch (error) {
         console.error(error);
         resultsDiv.textContent = 'Errore durante OCR: ' + error;
