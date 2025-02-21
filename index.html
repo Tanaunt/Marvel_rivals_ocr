@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Marvel Rivals OCR</title>
+  <!-- Carichiamo Tesseract.js da un CDN -->
+  <script src="https://unpkg.com/tesseract.js@2.1.4/dist/tesseract.min.js"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 20px;
+    }
+    #results {
+      margin-top: 20px;
+      padding: 10px;
+      border: 1px solid #ccc;
+    }
+    #loader {
+      display: none;
+      color: green;
+    }
+  </style>
+</head>
+<body>
+  <h1>Marvel Rivals OCR Demo</h1>
+  <p>Carica un'immagine e leggi il testo (nomi dei giocatori, etc.)</p>
+  
+  <!-- Input per selezionare l'immagine dal PC -->
+  <input type="file" id="file-input" accept="image/*" />
+
+  <!-- Pulsante per avviare il processo di OCR -->
+  <button id="process-button">Elabora immagine</button>
+
+  <!-- Indicatore di caricamento -->
+  <div id="loader">Elaborazione in corso, attendere...</div>
+
+  <!-- Div dove mostreremo i risultati -->
+  <div id="results"></div>
+
+  <script>
+    // Selezioniamo gli elementi dal DOM
+    const fileInput = document.getElementById('file-input');
+    const processButton = document.getElementById('process-button');
+    const loader = document.getElementById('loader');
+    const resultsDiv = document.getElementById('results');
+
+    // Funzione che gestisce l'OCR con Tesseract.js
+    async function doOCR(file) {
+      try {
+        loader.style.display = 'block';         // Mostra il loader
+        resultsDiv.textContent = '';           // Svuota risultati precedenti
+
+        // Eseguiamo Tesseract sull'immagine caricata
+        const { data: { text } } = await Tesseract.recognize(file, 'eng');
+        
+        // Mostriamo il testo estratto
+        resultsDiv.textContent = 'Testo rilevato:\n' + text;
+      } catch (error) {
+        console.error(error);
+        resultsDiv.textContent = 'Errore durante OCR: ' + error;
+      } finally {
+        loader.style.display = 'none';         // Nascondi il loader
+      }
+    }
+
+    // Ascoltatore di evento sul pulsante
+    processButton.addEventListener('click', () => {
+      const file = fileInput.files[0];
+      if (!file) {
+        alert('Seleziona prima un file immagine!');
+        return;
+      }
+      doOCR(file);
+    });
+  </script>
+</body>
+</html>
