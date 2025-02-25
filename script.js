@@ -1,43 +1,28 @@
 async function fetchData() {
-    const response = await fetch('https://Tanaunt.github.io/usernames.json');
+    const timestamp = new Date().getTime(); // Aggiunge un parametro per evitare la cache
+    const response = await fetch(`https://Tanaunt.github.io/Marvel_rivals_ocr/usernames.json?t=${timestamp}`);
     const data = await response.json();
     return data;
-}
-
-function extractStatsFromPage(username, url) {
-    return new Promise((resolve) => {
-        const iframe = document.createElement('iframe');
-        iframe.style.display = "none";
-        iframe.src = url;
-        document.body.appendChild(iframe);
-
-        iframe.onload = () => {
-            try {
-                const doc = iframe.contentDocument || iframe.contentWindow.document;
-                let heroStats = doc.querySelector(".hero-stats-class"); // Sostituire con il vero selettore CSS
-                resolve(heroStats ? heroStats.innerText : "Nessun dato trovato");
-            } catch (error) {
-                resolve("Errore nell'accesso ai dati");
-            }
-            document.body.removeChild(iframe);
-        };
-    });
 }
 
 async function updateTable() {
     const data = await fetchData();
     const table = document.getElementById('userTable');
+    table.innerHTML = ""; // Pulisce la tabella prima di riempirla
 
     for (const username of data.usernames) {
         const url = `https://tracker.gg/marvel-rivals/profile/ign/${username}/heroes?mode=competitive&season=2`;
-        const stats = await extractStatsFromPage(username, url);
-
+        
         let row = `<tr>
             <td>${username}</td>
-            <td>${stats}</td>
+            <td><a href="${url}" target="_blank">Apri Profilo</a></td>
         </tr>`;
         table.innerHTML += row;
     }
 }
 
+// 🔄 Aggiorna i dati ogni 10 secondi
+setInterval(updateTable, 10000);
+
+// Carica i dati all’avvio
 updateTable();
