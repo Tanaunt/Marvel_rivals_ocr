@@ -1,5 +1,5 @@
 async function fetchData() {
-    const response = await fetch('https://tuo-user-github.github.io/usernames.json');
+    const response = await fetch('https://Tanaunt.github.io/usernames.json');
     const data = await response.json();
     return data;
 }
