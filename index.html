@@ -1,55 +1,21 @@
 <!DOCTYPE html>
-<html>
+<html lang="it">
 <head>
-  <meta charset="UTF-8">
-  <title>Cerca Giocatori dalla Clipboard</title>
-  <style>
-    body { font-family: sans-serif; margin: 20px; }
-    #results { margin-top: 20px; padding: 10px; border: 1px solid #ccc; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marvel Rivals Tracker</title>
+    <script defer src="script.js"></script>
 </head>
 <body>
-  <h1>Cerca Giocatori dalla Clipboard</h1>
-  <p>Clicca il pulsante per leggere il testo copiato dalla clipboard (dallo script Python) e cercare i giocatori.</p>
-  <button id="readClipboard">Leggi Clipboard</button>
-  <div id="results"></div>
-
-  <script>
-    // Funzione per processare il testo e cercare i nomi dei giocatori
-    function extractPlayerNames(rawText) {
-  // Spezza il testo in righe, eliminando spazi extra e righe vuote
-  const lines = rawText.split('\n').map(line => line.trim()).filter(Boolean);
-  const playerNames = [];
-  // Regex: inizio linea, due cifre, spazi, poi nome utente composto da lettere, numeri, underscore o trattino, e fine linea
-  const regex = /^(\d{2})\s+([A-Za-z0-9_-]+)$/;
-  
-  for (const line of lines) {
-    const match = line.match(regex);
-    if (match) {
-      // match[1] è il numero, match[2] è il nome utente
-      playerNames.push(match[2]);
-    }
-  }
-  
-  return playerNames;
-}
-
-
-    document.getElementById('readClipboard').addEventListener('click', async () => {
-      try {
-        // Legge il testo dalla clipboard (richiede HTTPS e un'azione utente)
-        const text = await navigator.clipboard.readText();
-        const players = extractPlayerNames(text);
-        document.getElementById('results').innerHTML = `
-          <p><strong>Testo dalla Clipboard:</strong></p>
-          <pre>${text}</pre>
-          <p><strong>Nomi estratti:</strong> ${players.join(', ')}</p>
-        `;
-        // Qui potresti aggiungere ulteriori logiche per cercare le statistiche dei giocatori, ecc.
-      } catch (err) {
-        document.getElementById('results').innerText = "Errore nella lettura della clipboard: " + err;
-      }
-    });
-  </script>
+    <h1>Marvel Rivals - Tracker</h1>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Heroes Stats</th>
+            </tr>
+        </thead>
+        <tbody id="userTable"></tbody>
+    </table>
 </body>
 </html>
