@@ -2,7 +2,7 @@ async function fetchData() {
     const statusElement = document.getElementById('status'); // Elemento per notifiche di stato
     try {
         const timestamp = new Date().getTime(); // Aggiunge un parametro per evitare la cache
-        const response = await fetch(`https://TUO-USERNAME.github.io/NOME-REPO/usernames.json?t=${timestamp}`);
+        const response = await fetch(`https://Tanaunt.github.io/Marvel_rivals_ocr/usernames.json?t=${timestamp}`);
         
         if (!response.ok) {
             throw new Error(`Errore ${response.status}: Impossibile caricare il JSON`);
